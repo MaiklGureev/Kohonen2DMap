@@ -13,5 +13,6 @@ public class Main {
         neuralNetwork.testAndPrintKohonen2dMapVer2();
         neuralNetwork.testAndPrintKohonen2dMapVer3();
         neuralNetwork.printErrorKohonen2dMapOnTestDataset();
+        neuralNetwork.printErrorKohonen2dMapOnTestDatasetV2();
     }
 }

@@ -50,7 +50,7 @@ public class NeuralNetwork {
             }
             if (t % Config.printErrorEvery == 0) {
                 System.out.println();
-                System.out.println(String.format("Train iteration: %d/%d", t, Config.countTrainIterations));
+                System.out.printf("Train iteration: %d/%d%n", t, Config.countTrainIterations);
                 printErrorKohonen2dMapOnTrainDataset();
             }
         }
@@ -69,7 +69,7 @@ public class NeuralNetwork {
             }
             if (t % Config.printErrorEvery == 0) {
                 System.out.println();
-                System.out.println(String.format("Train iteration: %d/%d", t, Config.countTrainIterations));
+                System.out.printf("Train iteration: %d/%d%n", t, Config.countTrainIterations);
                 printErrorKohonen2dMapOnTrainDataset();
             }
         }
@@ -173,7 +173,7 @@ public class NeuralNetwork {
             for (int j = 0; j < Config.countAttrsInVector; j++) {
                 result[i][j] = data[i][j] / divider;
             }
-            result[i][data[0].length-1] = data[i][data[0].length-1];
+            result[i][data[0].length - 1] = data[i][data[0].length - 1];
         }
         return result;
     }
@@ -198,36 +198,35 @@ public class NeuralNetwork {
                 result += Math.pow(neuronWinner.calcDistanceBetweenNeuronAndInputVector(dataset[i]), 2);
             }
         }
-        result = 1.0 / Config.countNeurons * result;
+        result = 1.0 / dataset.length * result;
         return result;
     }
 
 
     public void printErrorKohonen2dMapOnTrainDataset() {
         System.out.println("----------------printErrorKohonen2dMapOnTrainDataset----------------");
-        System.out.print(String.format("E = %.5f ", calculateError(train)));
+        System.out.printf("E = %.5f ", calculateError(train));
         System.out.println();
     }
 
     public void printErrorKohonen2dMapOnTestDataset() {
         System.out.println("----------------printErrorKohonen2dMapOnTestDataset----------------");
-        System.out.print(String.format("E = %.5f ", calculateError(test)));
+        System.out.printf("E = %.5f ", calculateError(test));
         System.out.println();
     }
 
-
-    public void testAndPrintKohonen2dMap() {
-        System.out.println("----------------testAndPrintKohonen2dMap----------------");
+    public void printErrorKohonen2dMapOnTestDatasetV2() {
+        System.out.println("----------------printErrorKohonen2dMapOnTestDatasetV2----------------");
         for (int d = 0; d < train.length; d++) {
             Neuron neuronWinner = findNeuronWinnerWTM(train[d]);
             neuronWinner.clearClassCounts();
-            if ((int) train[d][train[0].length - 1] == 1000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassA) {
                 neuronWinner.countClassA++;
             }
-            if ((int) train[d][train[0].length - 1] == 2000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassB) {
                 neuronWinner.countClassB++;
             }
-            if ((int) train[d][train[0].length - 1] == 3000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassC) {
                 neuronWinner.countClassC++;
             }
         }
@@ -237,7 +236,56 @@ public class NeuralNetwork {
                 int a = neurons[i][j].countClassA;
                 int b = neurons[i][j].countClassB;
                 int c = neurons[i][j].countClassC;
-                System.out.print(String.format("[A:%02d,B:%02d,C:%02d]", a, b, c));
+
+                if (a == 0 && b == 0 && c == 0) {
+                    neurons[i][j].currentClass = Config.indicatorClassNone;
+                } else if (a > b && a > c) {
+                    neurons[i][j].currentClass = Config.indicatorClassA;
+                } else if (b > a && b > c) {
+                    neurons[i][j].currentClass = Config.indicatorClassB;
+                } else if (c > a && c > b) {
+                    neurons[i][j].currentClass = Config.indicatorClassC;
+                } else {
+                    neurons[i][j].currentClass = Config.indicatorClassUndefined;
+                }
+            }
+        }
+
+        double error = 0;
+        for (int d = 0; d < test.length; d++) {
+            Neuron neuronWinner = findNeuronWinnerWTM(test[d]);
+            neuronWinner.clearClassCounts();
+            if (neuronWinner.currentClass == Config.indicatorClassNone ||
+                    neuronWinner.currentClass == Config.indicatorClassUndefined) {
+                error++;
+            }
+        }
+        System.out.printf("%d/%d    %.1f percents", (int) error, test.length, error / test.length * 100);
+        System.out.println();
+    }
+
+    public void testAndPrintKohonen2dMap() {
+        System.out.println("----------------testAndPrintKohonen2dMap----------------");
+        for (int d = 0; d < train.length; d++) {
+            Neuron neuronWinner = findNeuronWinnerWTM(train[d]);
+            neuronWinner.clearClassCounts();
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassA) {
+                neuronWinner.countClassA++;
+            }
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassB) {
+                neuronWinner.countClassB++;
+            }
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassC) {
+                neuronWinner.countClassC++;
+            }
+        }
+
+        for (int i = 0; i < Config.sizeOfMap; i++) {
+            for (int j = 0; j < Config.sizeOfMap; j++) {
+                int a = neurons[i][j].countClassA;
+                int b = neurons[i][j].countClassB;
+                int c = neurons[i][j].countClassC;
+                System.out.printf("[A:%02d,B:%02d,C:%02d]", a, b, c);
             }
             System.out.println();
         }
@@ -248,17 +296,16 @@ public class NeuralNetwork {
         for (int d = 0; d < train.length; d++) {
             Neuron neuronWinner = findNeuronWinnerWTM(train[d]);
             neuronWinner.clearClassCounts();
-            if ((int) train[d][train[0].length - 1] == 1000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassA) {
                 neuronWinner.countClassA++;
             }
-            if ((int) train[d][train[0].length - 1] == 2000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassB) {
                 neuronWinner.countClassB++;
             }
-            if ((int) train[d][train[0].length - 1] == 3000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassC) {
                 neuronWinner.countClassC++;
             }
         }
-
         for (int i = 0; i < Config.sizeOfMap; i++) {
             for (int j = 0; j < Config.sizeOfMap; j++) {
                 int a = neurons[i][j].countClassA;
@@ -276,7 +323,6 @@ public class NeuralNetwork {
                 } else {
                     System.out.print("[%%%%]");
                 }
-
             }
             System.out.println();
         }
@@ -287,13 +333,13 @@ public class NeuralNetwork {
         for (int d = 0; d < train.length; d++) {
             Neuron neuronWinner = findNeuronWinnerWTM(train[d]);
             neuronWinner.clearClassCounts();
-            if ((int) train[d][train[0].length - 1] == 1000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassA) {
                 neuronWinner.countClassA++;
             }
-            if ((int) train[d][train[0].length - 1] == 2000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassB) {
                 neuronWinner.countClassB++;
             }
-            if ((int) train[d][train[0].length - 1] == 3000) {
+            if ((int) train[d][train[0].length - 1] == Config.indicatorClassC) {
                 neuronWinner.countClassC++;
             }
         }

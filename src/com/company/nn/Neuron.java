@@ -14,6 +14,8 @@ public class Neuron {
     int countClassB = 0;
     int countClassC = 0;
 
+    int currentClass = 0;
+
     public Neuron(int i, int j, int countAttrs) {
         this.i = i;
         this.j = j;
