@@ -256,7 +256,8 @@ public class NeuralNetwork {
             Neuron neuronWinner = findNeuronWinnerWTM(test[d]);
             neuronWinner.clearClassCounts();
             if (neuronWinner.currentClass == Config.indicatorClassNone ||
-                    neuronWinner.currentClass == Config.indicatorClassUndefined) {
+                    neuronWinner.currentClass == Config.indicatorClassUndefined ||
+                    neuronWinner.currentClass != test[d][test[0].length - 1]) {
                 error++;
             }
         }
